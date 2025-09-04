@@ -35,7 +35,9 @@ void handle_server_messages(int server_socket) {
 
 int main() {
     int client_socket;
-    sockaddr_in server_address{};
+    sockaddr_in server_address;
+    memset(&server_address, 0, sizeof(server_address)); 
+
 
     client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket < 0) {
@@ -44,7 +46,7 @@ int main() {
     }
 
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(12345);
+    server_address.sin_port = htons(8080);
     server_address.sin_addr.s_addr = inet_addr("127.0.0.1");
 
     if (connect(client_socket, (sockaddr*)&server_address, sizeof(server_address)) < 0) {
@@ -83,7 +85,8 @@ int main() {
     }
 
     // Start thread for receiving messages from server
-    std::thread receive_thread(handle_server_messages, client_socket);
+    std::thread receive_thread(handle_server_messages, std::ref(client_socket));
+
     // We use detach because we want this thread to run in the background while the main thread continues running
     receive_thread.detach();
 

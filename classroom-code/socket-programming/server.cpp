@@ -6,8 +6,18 @@
 
 #define PORT 8080
 
+/*
+ > STEPS
+    1. Create a socket with the socket() system call.
+    2. Bind the socket to an address using the bind() system call. For a server socket on the Internet, an address consists of a port number on the host machine.
+    3. Listen for connections with the listen() system call.
+    4. Accept a connection with the accept() system call. This call typically blocks until a client connects with the server.
+    5. Send and receive data using the read() and write() system calls.
+ */
+ 
 int main() {
-    int server_fd, new_socket;
+    int server_fd, new_socket;  // server_fd is the file descriptor for the socket that the server will use to listen for incoming connections
+                                // new_socket is the file descriptor for the socket that the server will use to communicate with the client
     struct sockaddr_in address;
     int opt = 1;
     int addrlen = sizeof(address);
@@ -21,6 +31,7 @@ int main() {
     }
 
     // Set socket options (macOS compatible)
+    // This allows the server to reuse the address and port helping to avoid the "Address already in use" error
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
         perror("setsockopt");
         exit(EXIT_FAILURE);
@@ -52,9 +63,19 @@ int main() {
 
     read(new_socket, buffer, 1024);
     std::cout << "Message from client: " << buffer << std::endl;
-
     send(new_socket, hello, strlen(hello), 0);
     std::cout << "Hello message sent" << std::endl;
+
+    while(1){
+        char buffer[1024] = {0};
+        cin>>buffer;
+        
+        if (buffer[0] == '.') {
+            break;
+        } else {
+            std::cout << "Message from client: " << buffer << std::endl;
+        }
+    }
 
     close(new_socket);
     close(server_fd);
